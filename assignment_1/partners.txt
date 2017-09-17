@@ -2,4 +2,4 @@
 ~~ Name - "Github username" <Email> ~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Spencer Cornish - "SpencerCornish" <spencerjcornish@gmail.com>
-Emily Felde - "roboemily" <>
+Emily Felde - "roboemily" <roboemily@msn.com>
