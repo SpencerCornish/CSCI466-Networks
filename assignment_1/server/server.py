@@ -27,7 +27,7 @@ class server(BaseHTTPRequestHandler):
     #text file
 
 
-    def main():
+    if __name__ == '__main__':
         if(len(sys.argv) != 3):
             print(FAILURE + 'incorrect number of arguments!' + DEF_C)
             sys.exit(1)
@@ -105,5 +105,3 @@ class server(BaseHTTPRequestHandler):
         else:
             do_Post("hit=0", 200)
             #missed
-
-    main()
