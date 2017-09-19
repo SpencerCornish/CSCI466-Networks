@@ -20,23 +20,21 @@ def printC(color, message):
 def outOfBounds(message):
     printC(IMPORTANT, 'ERROR (Code 404): Coordinates are out of bounds! Message as follows:')
     print(message)
-    sys.exit(2)
 
 # Invoked when coords were already fired upon
 def alreadyFired(message):
     printC(IMPORTANT, 'ERROR (Code 410): Coordinates have already been fired upon! Message as follows: ')
     print(message)
-    sys.exit(2)
 
 # Invoked when invalid data formatting was used to communicate
 def badRequest(message):
     printC(FAILURE, 'ERROR (Code 400): Bad request. Ensure query data is of a proper format. Message as follows: ')
     print(message)
-    sys.exit(2)
 
 # Invoked when a hit or miss occurred
 def processValidResponse(message):
     printC(SUCCESS, 'Good things happened!')
+    print(message)
 
 
 
