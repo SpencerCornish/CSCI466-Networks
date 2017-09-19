@@ -1,7 +1,7 @@
 ############ Imports
-import http.client
+import httplib
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib
 import os
 
 
@@ -13,7 +13,7 @@ SUCCESS = "\033[1;32;40m"
 DEF_C = "\033[0;37;40m"
 
 def printC(color, message):
-    print((color + message + DEF_C))
+    print(color + message + DEF_C)
 
 
 # Invoked when out of bounds coords were sent
@@ -77,11 +77,11 @@ if __name__ == '__main__':
 
     headers = {'Content-type':'application/x-www-form-urlencoded'}
 
-    paramList = {'y': yCord, 'x': xCord}
-    encodedUrl = '/fire&' + urllib.parse.urlencode(paramList)
+    paramList = {'y' : yCord, 'x': xCord}
+    encodedUrl = '/fire?' + urllib.urlencode(paramList)
 
-    print(('Attempting to POST to '+ ip + ':' + port +  encodedUrl))
-    conn = http.client.HTTPConnection(host=ip, port=port)
+    print ('Attempting to POST to '+ ip + ':' + port +  encodedUrl)
+    conn = httplib.HTTPConnection(host=ip, port=port)
     conn.request("POST", encodedUrl, None, headers)
 
     response = conn.getresponse()

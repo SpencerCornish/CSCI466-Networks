@@ -1,19 +1,24 @@
-import http.client
+import httplib
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib
 #import urllib.parse
 #from urllib import urllib.parse
 import sys
 import array
 import socket
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 ########Globals
 #port parameter on which client can connect
 port = None
 #file w/ setup of your board
 board = None
 oboard = None
-
+#x and y coordinates of hit
+x = None
+y = None
+#message to client whether it was a hit or miss
+code = None
+message = None
 #number of hits each ship has recieved
 chit = 0
 bhit = 0
@@ -26,22 +31,22 @@ class Server(BaseHTTPRequestHandler):
 
     #when fire: send message to other server, get response back, update own board based on that info
 
-
-    def do_GET(self):
+    def headers(self):
         self.send_response(code)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
+
+    def do_GET(self):
+        self.headers(code)
         self.wfile.write(bytes(board, "utf8"))
 
     def do_POST(self):
         coor = urllib.parse.parse_qs(self.path)
-        xCoord = int(coor['x'][0])
-        yCoord = int(coor['y'][0])
-        returnMessage = checkInput(xCoord, yCoord)
-        self.send_response(returnMessage[0])
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-        self.wfile.write(returnMessage[1].encode())
+        x = int(coor[0])
+        y = int(coor[1])
+        checkInput(x, y)
+        self.headers(code)
+        self.wfile.write(message.encode())
 
 
 
@@ -51,18 +56,21 @@ class Server(BaseHTTPRequestHandler):
 
 def checkInput(x, y):
     if x < 0 | x > 9 | y < 0 | y > 9:
-        return [404, "HTTP Not Found"]
-    elif ((oboard[x][y] == 'X') | (oboard[x][y] == '.')):
-        return [410, "HTTP Gone"]
+        message = "HTTP Not Found"
+        code = 404
+        return message, code
+    elif oboard[x-1][y-1] == 'X' | oboard[x-1][y-1] == '.':
+        message = "HTTP Gone"
+        code = 410
+        return message, code
     else:
-        return checkBoard(x, y)
+        checkBoard()
 
-
-def checkBoard(x, y):
-    cell = oboard[x][y]
+def checkBoard():
+    cell = oboard[x-1][y-1]
     if cell == 'C':
         chit = chit +1
-        oboard[x][y] = 'X'
+        oboard[x-1][y-1] = 'X'
         if chit == 5:
             message = "hit=1&sink=C"
             code = 200
@@ -73,7 +81,7 @@ def checkBoard(x, y):
             #carrier hit
     elif cell == 'B':
         bhit = bhit +1
-        oboard[x][y] = 'X'
+        oboard[x-1][y-1] = 'X'
         if bhit == 4:
             message = "hit=1&sink=B"
             code = 200
@@ -84,7 +92,7 @@ def checkBoard(x, y):
             #battleship hit
     elif cell == 'R':
         rhit = rhit +1
-        oboard[x][y] = 'X'
+        oboard[x-1][y-1] = 'X'
         if rhit == 3:
             message = "hit=1&sink=R"
             code = 200
@@ -95,7 +103,7 @@ def checkBoard(x, y):
             #cruiser hit
     elif cell == 'S':
         shit = shit +1
-        oboard[x][y] = 'X'
+        oboard[x-1][y-1] = 'X'
         if shit == 3:
             message = "hit=1&sink=S"
             code = 200
@@ -106,7 +114,7 @@ def checkBoard(x, y):
             #sub hit
     elif cell == 'D':
         dhit = dhit +1
-        oboard[x][y] = 'X'
+        oboard[x-1][y-1] = 'X'
         if dhit == 2:
             message = "hit=1&sink=D"
             code = 200
@@ -116,10 +124,10 @@ def checkBoard(x, y):
             code = 200
             #destroyer hit
     else:
-        oboard[x][y] = '.'
+        oboard[x-1][y-1] = '.'
         message = "hit=0"
         code = 200
-    return [code, message]
+    return message, code
         #missed
 
 def show_board(which_board):
@@ -130,7 +138,7 @@ def show_board(which_board):
 
 if __name__ == '__main__':
     if(len(sys.argv) != 3):
-        print((FAILURE + 'incorrect number of arguments!' + DEF_C))
+        print(FAILURE + 'incorrect number of arguments!' + DEF_C)
         sys.exit(1)
     port = sys.argv[1]
     board = sys.argv[2]
