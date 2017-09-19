@@ -23,15 +23,18 @@ dhit = 0
 FAILURE = "\033[1;31;40m"
 DEF_C = "\033[0;37;40m"
 class Server(BaseHTTPRequestHandler):
-
-    #when fire: send message to other server, get response back, update own board based on that info
-
-
     def do_GET(self):
-        self.send_response(code)
+        self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(bytes(board, "utf8"))
+        boardFile = "Error"
+        if(self.path == '/own_board.html'):
+                print('DING')
+                boardFile = displayBoard('my_board.txt')
+        if(self.path == '/opponent_board.html'):
+                boardFile = displayBoard('enemy_board.txt')
+        prettyFile = '<html><body><h1><pre>' + boardFile + '</pre></h1></body></html>'
+        self.wfile.write(prettyFile.encode())
 
     def do_POST(self):
         coor = urllib.parse.parse_qs(self.path)
@@ -39,30 +42,30 @@ class Server(BaseHTTPRequestHandler):
         yCoord = int(coor['y'][0])
         returnMessage = checkInput(xCoord, yCoord)
         self.send_response(returnMessage[0])
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-Type', 'text')
         self.end_headers()
         self.wfile.write(returnMessage[1].encode())
 
 
-
-
-
-
-
-def checkInput(x, y):
-    if x < 0 | x > 9 | y < 0 | y > 9:
+def checkInput(xCoord, yCoord):
+    if (xCoord < 0 or xCoord > 9 or yCoord < 0 or yCoord > 9):
         return [404, "HTTP Not Found"]
-    elif ((oboard[x][y] == 'X') | (oboard[x][y] == '.')):
+    elif ((oboard[xCoord][yCoord] == 'X') or (oboard[xCoord][yCoord] == '.')):
         return [410, "HTTP Gone"]
     else:
-        return checkBoard(x, y)
+        return checkBoard(xCoord, yCoord)
 
 
 def checkBoard(x, y):
-    cell = oboard[x][y]
+    global chit
+    global bhit
+    global rhit
+    global shit
+    global dhit
+    cell = oboard[y][x]
     if cell == 'C':
         chit = chit +1
-        oboard[x][y] = 'X'
+        oboard[y][x] = 'X'
         if chit == 5:
             message = "hit=1&sink=C"
             code = 200
@@ -73,7 +76,7 @@ def checkBoard(x, y):
             #carrier hit
     elif cell == 'B':
         bhit = bhit +1
-        oboard[x][y] = 'X'
+        oboard[y][x] = 'X'
         if bhit == 4:
             message = "hit=1&sink=B"
             code = 200
@@ -84,7 +87,7 @@ def checkBoard(x, y):
             #battleship hit
     elif cell == 'R':
         rhit = rhit +1
-        oboard[x][y] = 'X'
+        oboard[y][x] = 'X'
         if rhit == 3:
             message = "hit=1&sink=R"
             code = 200
@@ -95,7 +98,7 @@ def checkBoard(x, y):
             #cruiser hit
     elif cell == 'S':
         shit = shit +1
-        oboard[x][y] = 'X'
+        oboard[y][x] = 'X'
         if shit == 3:
             message = "hit=1&sink=S"
             code = 200
@@ -106,7 +109,7 @@ def checkBoard(x, y):
             #sub hit
     elif cell == 'D':
         dhit = dhit +1
-        oboard[x][y] = 'X'
+        oboard[y][x] = 'X'
         if dhit == 2:
             message = "hit=1&sink=D"
             code = 200
@@ -116,16 +119,18 @@ def checkBoard(x, y):
             code = 200
             #destroyer hit
     else:
-        oboard[x][y] = '.'
+        oboard[y][x] = '.'
         message = "hit=0"
         code = 200
+    print("X: " + str(x))
+    print("Y: " + str(y))
+    print(oboard)
     return [code, message]
         #missed
 
-def show_board(which_board):
-    g = open(which_board, 'r')
-    b = g.read()
-    message = b
+def displayBoard(which_board):
+    boardFile = open(which_board, 'r')
+    message = boardFile.read()
     return message
 
 if __name__ == '__main__':
