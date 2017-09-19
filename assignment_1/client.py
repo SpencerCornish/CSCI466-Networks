@@ -39,29 +39,26 @@ def badRequest(message):
 # Invoked when a hit or miss occurred
 def processValidResponse(message, xCoord, yCoord):
     parsedResponse = urllib.parse.parse_qs(message)
+
+    # Read in the file
     oboard = []
     f = open('enemy_board.txt', 'r')
     for line in f:
         oboard.append(list(line))
-    f.close()
 
     if(int(parsedResponse['hit'][0]) == 0):
-        print('You missed!')
-        oboard[yCoord][xCoord] = "M"
+        printC(IMPORTANT, 'You missed!')
+        oboard[int(yCoord)][int(xCoord)] = '.'
+    if(int(parsedResponse['hit'][0]) == 1):
+        printC(SUCCESS, 'You hit!')
+        oboard[int(yCoord)][int(xCoord)] = 'X'
 
-    if(int(parsedResponse['hit'][1]) == 0):
-        print('You hit!')
-        oboard[yCoord][xCoord] = 'H'
-
-    if(sink in parsedResponse.keys()):
+    if('sink' in parsedResponse.keys()):
         printC(SUCCESS, 'You sunk a ' + ships[parsedResponse['sink']])
 
-global chit
-global bhit
-global rhit
-global shit
-global dhit
-
+    with open('enemy_board.txt', 'w') as file:
+        for line in oboard:
+            file.write(''.join(line))
 
 
 
@@ -103,7 +100,7 @@ if __name__ == '__main__':
     paramList = {'y': yCoord, 'x': xCoord}
     encodedUrl = '/fire&' + urllib.parse.urlencode(paramList)
 
-    print(('Attempting to POST to '+ ip + ':' + port +  encodedUrl))
+    print('Attempting to POST to '+ ip + ':' + port)
     conn = http.client.HTTPConnection(host=ip, port=port)
     conn.request("POST", encodedUrl, None, headers)
 
