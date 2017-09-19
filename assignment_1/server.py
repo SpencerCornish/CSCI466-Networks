@@ -41,8 +41,8 @@ class Server(BaseHTTPRequestHandler):
         xCoord = int(coor['x'][0])
         yCoord = int(coor['y'][0])
         returnMessage = checkInput(xCoord, yCoord)
-        with open(board, 'w') as file
-            for line in board:
+        with open(board, 'w') as file:
+            for line in oboard:
                 file.write(''.join(line))
         self.send_response(returnMessage[0])
         self.send_header('Content-Type', 'text')
