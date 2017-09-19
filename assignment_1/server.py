@@ -41,11 +41,13 @@ class Server(BaseHTTPRequestHandler):
         xCoord = int(coor['x'][0])
         yCoord = int(coor['y'][0])
         returnMessage = checkInput(xCoord, yCoord)
+        with open(board, 'w') as file
+            for line in board:
+                file.write(''.join(line))
         self.send_response(returnMessage[0])
         self.send_header('Content-Type', 'text')
         self.end_headers()
         self.wfile.write(returnMessage[1].encode())
-
 
 def checkInput(xCoord, yCoord):
     if (xCoord < 0 or xCoord > 9 or yCoord < 0 or yCoord > 9):
@@ -143,5 +145,6 @@ if __name__ == '__main__':
     f = open(board, 'r')
     for line in f:
         oboard.append(list(line))
+
     server = HTTPServer(('', int(port)), Server)
     server.serve_forever()
