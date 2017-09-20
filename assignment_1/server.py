@@ -12,7 +12,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 port = None
 #file w/ setup of your board
 board = None
-oboard = None
 
 #number of hits each ship has recieved
 chit = 0
@@ -29,7 +28,6 @@ class Server(BaseHTTPRequestHandler):
         self.end_headers()
         boardFile = "Error"
         if(self.path == '/own_board.html'):
-                print('DING')
                 boardFile = displayBoard('my_board.txt')
         if(self.path == '/opponent_board.html'):
                 boardFile = displayBoard('enemy_board.txt')
@@ -37,12 +35,18 @@ class Server(BaseHTTPRequestHandler):
         self.wfile.write(prettyFile.encode())
 
     def do_POST(self):
+        global myBoard
+        myBoard = []
+        f = open(board, 'r')
+        for line in f:
+            myBoard.append(list(line))
+        f.close()
         coor = urllib.parse.parse_qs(self.path)
         xCoord = int(coor['x'][0])
         yCoord = int(coor['y'][0])
         returnMessage = checkInput(xCoord, yCoord)
         with open(board, 'w') as file:
-            for line in oboard:
+            for line in myBoard:
                 file.write(''.join(line))
         self.send_response(returnMessage[0])
         self.send_header('Content-Type', 'text')
@@ -52,7 +56,7 @@ class Server(BaseHTTPRequestHandler):
 def checkInput(xCoord, yCoord):
     if (xCoord < 0 or xCoord > 9 or yCoord < 0 or yCoord > 9):
         return [404, "HTTP Not Found"]
-    elif ((oboard[xCoord][yCoord] == 'X') or (oboard[xCoord][yCoord] == '.')):
+    elif ((myBoard[yCoord][xCoord] == 'X') or (myBoard[yCoord][xCoord] == '.')):
         return [410, "HTTP Gone"]
     else:
         return checkBoard(xCoord, yCoord)
@@ -64,10 +68,10 @@ def checkBoard(x, y):
     global rhit
     global shit
     global dhit
-    cell = oboard[y][x]
+    cell = myBoard[y][x]
     if cell == 'C':
         chit = chit +1
-        oboard[y][x] = 'X'
+        myBoard[y][x] = 'X'
         if chit == 5:
             message = "hit=1&sink=C"
             code = 200
@@ -78,7 +82,7 @@ def checkBoard(x, y):
             #carrier hit
     elif cell == 'B':
         bhit = bhit +1
-        oboard[y][x] = 'X'
+        myBoard[y][x] = 'X'
         if bhit == 4:
             message = "hit=1&sink=B"
             code = 200
@@ -89,7 +93,7 @@ def checkBoard(x, y):
             #battleship hit
     elif cell == 'R':
         rhit = rhit +1
-        oboard[y][x] = 'X'
+        myBoard[y][x] = 'X'
         if rhit == 3:
             message = "hit=1&sink=R"
             code = 200
@@ -100,7 +104,7 @@ def checkBoard(x, y):
             #cruiser hit
     elif cell == 'S':
         shit = shit +1
-        oboard[y][x] = 'X'
+        myBoard[y][x] = 'X'
         if shit == 3:
             message = "hit=1&sink=S"
             code = 200
@@ -111,7 +115,7 @@ def checkBoard(x, y):
             #sub hit
     elif cell == 'D':
         dhit = dhit +1
-        oboard[y][x] = 'X'
+        myBoard[y][x] = 'X'
         if dhit == 2:
             message = "hit=1&sink=D"
             code = 200
@@ -121,12 +125,9 @@ def checkBoard(x, y):
             code = 200
             #destroyer hit
     else:
-        oboard[y][x] = '.'
+        myBoard[y][x] = '.'
         message = "hit=0"
         code = 200
-    print("X: " + str(x))
-    print("Y: " + str(y))
-    print(oboard)
     return [code, message]
         #missed
 
@@ -141,10 +142,5 @@ if __name__ == '__main__':
         sys.exit(1)
     port = sys.argv[1]
     board = sys.argv[2]
-    oboard = []
-    f = open(board, 'r')
-    for line in f:
-        oboard.append(list(line))
-
     server = HTTPServer(('', int(port)), Server)
     server.serve_forever()

@@ -26,7 +26,6 @@ def printC(color, message):
 # Invoked when out of bounds coords were sent
 def outOfBounds(message):
     printC(IMPORTANT, 'ERROR (Code 404): Coordinates are out of bounds!')
-    print(message)
 
 # Invoked when coords were already fired upon
 def alreadyFired(message):
@@ -54,7 +53,7 @@ def processValidResponse(message, xCoord, yCoord):
         oboard[int(yCoord)][int(xCoord)] = 'X'
 
     if('sink' in parsedResponse.keys()):
-        printC(SUCCESS, 'You sunk a ' + ships[parsedResponse['sink']])
+        printC(SUCCESS, 'You sunk a ' + ships[parsedResponse['sink'][0]])
 
     with open('enemy_board.txt', 'w') as file:
         for line in oboard:
