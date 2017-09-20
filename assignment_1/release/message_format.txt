@@ -1,0 +1,17 @@
+for a fire message (POST):
+send an encodedUrl with "/fire&" with parameters x= & y=
+Ex:
+Attempting to POST to localhost:8000/fire&y=5&x=4
+
+Server response:
+127.0.0.1 - - [18/Sep/2017 17:58:22] "POST /fire&y=5&x=4 HTTP/1.1" 200 -
+It sends the client an encodedURL with parameters "hit=1&sink=D" if
+you hit and sunk a destroyer
+
+For a GET:
+Ex: Getting your own board from the browser at localhost:8000/own_board.html
+GET /own_board.html HTTP/1.1
+
+Server Response:
+"GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Sep/2017 17:56:43]
