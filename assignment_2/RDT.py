@@ -91,7 +91,39 @@ class RDT:
 
 
     def rdt_2_1_send(self, msg_S):
-        pass
+        p = Packet(self.seq_num, msg_S)
+        #while seq_num has not increased
+        while True:
+            self.network.udt_send(p.get_byte_S())
+            #response from reciever
+            rmessage = ''
+            #while the response is nothing
+            while True:
+                rmessage = self.network.udt_receive()
+                if(rmessage !== ''):
+                    break;
+            #find length of the rmessage we recieved
+            mlength = int(rmessage[:Packet.length_S_length])
+            #find byte buffer by going from the length of the message to the end of the packet
+            self.byte_buffer = rmessage[mlength:]
+            #if packet is corrupt, set buffer to ''
+            if Packet.corrupt(rmessage[:mlength]):
+                self.byte_buffer = ''
+            #if packet is not corrupt
+            if !Packet.corrupt(rmessage[:mlength]):
+                #turn bytes into the packet and store in array
+                packet = Packet.from_byte_S(rmessage[:mlength])
+                #check to see if packet's sequence number is behind, send ACK packet if behind
+                if packet.seq_num < self.seq_num:
+                    ackpacket = Packet(packet.seq_num, "1")
+                    self.network.udt_send(ackpacket.get_byte_S())
+                #check if its an ACK packet. Add to sequence num if it is
+                elif packet.msg_S == "1":
+                    self.seq_num +=1
+                    break;
+                #check if its a NAK packet.
+                elif packet.msg_S == "0":
+                    self.byte_buffer = ''
 
     def rdt_2_1_receive(self):
         ret_S = None
@@ -146,10 +178,45 @@ class RDT:
 
         return ret_S
 
-
-
     def rdt_3_0_send(self, msg_S):
-        pass
+        #current time
+        t = None;
+        p = Packet(self.seq_num, msg_S)
+        while True:
+            self.network.udt_send(p.get_byte_S())
+            rmessage = ''
+            #get current time
+            t = time.time()
+            while True:
+                #timeout if waiting more than 4 seconds
+                if(time.time() < (4 + t)):
+                    break;
+                rmessage = self.network.udt_receive()
+                #if response is not empty
+                if(rmessage !== ''):
+                    break;
+                #find length of the rmessage we recieved
+                mlength = int(rmessage[:Packet.length_S_length])
+                #find byte buffer by going from the length of the message to the end of the packet
+                self.byte_buffer = rmessage[mlength:]
+                #if packet is corrupt, set buffer to ''
+                if Packet.corrupt(rmessage[:mlength]):
+                    self.byte_buffer = ''
+                #if packet is not corrupt
+                if !Packet.corrupt(rmessage[:mlength]):
+                    #turn bytes into the packet and store in array
+                    packet = Packet.from_byte_S(rmessage[:mlength])
+                    #check to see if packet's sequence number is behind, send ACK packet if behind
+                    if packet.seq_num < self.seq_num:
+                        ackpacket = Packet(packet.seq_num, "1")
+                        self.network.udt_send(ackpacket.get_byte_S())
+                    #check if its an ACK packet. Add to sequence num if it is
+                    elif packet.msg_S == "1":
+                        self.seq_num +=1
+                        break;
+                    #check if its a NAK packet.
+                    elif packet.msg_S == "0":
+                        self.byte_buffer = ''
 
     def rdt_3_0_receive(self):
         pass
