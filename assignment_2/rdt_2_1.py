@@ -1,7 +1,8 @@
-import Network
+import network_2_1
 import argparse
 from time import sleep
 import hashlib
+import time
 
 
 class Packet:
@@ -59,7 +60,7 @@ class RDT:
     byte_buffer = ''
 
     def __init__(self, role_S, server_S, port):
-        self.network = Network.NetworkLayer(role_S, server_S, port)
+        self.network = network_2_1.NetworkLayer(role_S, server_S, port)
 
     def disconnect(self):
         self.network.disconnect()
