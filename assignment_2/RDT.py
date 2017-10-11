@@ -219,7 +219,57 @@ class RDT:
                         self.byte_buffer = ''
 
     def rdt_3_0_receive(self):
-        pass
+        ret_S = None
+        byte_S = self.network.udt_receive()
+        self.byte_buffer = self.byte_buffer + byte_S
+
+        while True:
+            # check if we have received enough bytes
+            if len(self.byte_buffer) < Packet.length_S_length:
+                break  # not enough bytes to read packet length
+
+            length = int(self.byte_buffer[:Packet.length_S_length])
+            if len(self.byte_buffer) < length:
+                break  # not enough bytes to read the whole packet
+
+            # Check for corrupt packet
+            if Packet.corrupt(self.byte_buffer):
+                resp = Packet(self.seq_num, "0")
+                self.network.udt_send(resp.get_byte_S())
+            else:
+
+                # Cache the packet
+                packet = Packet.from_byte_S(self.byte_buffer[0:length])
+
+                # Check for ACK or NACK
+                if (packet.msg_S == 0 || packet.msg_S == 1):
+                    self.byte_buffer = self.byte_buffer[length:]
+                    continue
+
+                # Check for desynced packet
+                if packet.seq_num < self.seq_num:
+                    resp = Packet(packet.seq_num, "1")
+                    self.network.udt_send(resp.get_byte_S())
+
+                # If all is good
+                elif packet.seq_num == self.seq_num:
+                    resp = Packet(packet.seq_num=, "1")
+                    self.network.udt_send(resp.get_byte_S())
+                    self.seq_num = self.seq_num + 1
+                # For if the packet number is greater than ours, really shouldn't happen
+                else:
+                    print("Unexpected error!")
+
+                # Null checker for ret_S
+                if ret_S is None:
+                    ret_S = packet.msg_S
+                else:
+                    ret_S = ret_S + packet.msg_S
+
+            # Purge the buffer
+            self.byte_buffer = self.byte_buffer[length:]
+
+        return ret_S
 
 
 if __name__ == '__main__':
