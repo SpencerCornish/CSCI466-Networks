@@ -190,34 +190,34 @@ class RDT:
             t = time.time()
             while True:
                 #timeout if waiting more than 5 seconds
-                if(time.time() < (5 + t)):
+                if(time.time() > (5 + t) or rmessage != ''):
                     break;
                 rmessage = self.network.udt_receive()
                 #if response is not empty
                 if(rmessage != ''):
                     break;
-                #find length of the rmessage we recieved
-                mlength = int(rmessage[:Packet.length_S_length])
-                #find byte buffer by going from the length of the message to the end of the packet
-                self.byte_buffer = rmessage[mlength:]
-                #if packet is corrupt, set buffer to ''
-                if Packet.corrupt(rmessage[:mlength]):
+            #find length of the rmessage we recieved
+            mlength = int(rmessage[:Packet.length_S_length])
+            #find byte buffer by going from the length of the message to the end of the packet
+            self.byte_buffer = rmessage[mlength:]
+            #if packet is corrupt, set buffer to ''
+            if Packet.corrupt(rmessage[:mlength]):
+                self.byte_buffer = ''
+            #if packet is not corrupt
+            if not Packet.corrupt(rmessage[:mlength]):
+                #turn bytes into the packet and store in array
+                packet = Packet.from_byte_S(rmessage[:mlength])
+                #check to see if packet's sequence number is behind, send ACK packet if behind
+                if packet.seq_num < self.seq_num:
+                    ackpacket = Packet(packet.seq_num, "1")
+                    self.network.udt_send(ackpacket.get_byte_S())
+                #check if its an ACK packet. Add to sequence num if it is
+                elif packet.msg_S == "1":
+                    self.seq_num +=1
+                    break;
+                #check if its a NAK packet.
+                elif packet.msg_S == "0":
                     self.byte_buffer = ''
-                #if packet is not corrupt
-                if not Packet.corrupt(rmessage[:mlength]):
-                    #turn bytes into the packet and store in array
-                    packet = Packet.from_byte_S(rmessage[:mlength])
-                    #check to see if packet's sequence number is behind, send ACK packet if behind
-                    if packet.seq_num < self.seq_num:
-                        ackpacket = Packet(packet.seq_num, "1")
-                        self.network.udt_send(ackpacket.get_byte_S())
-                    #check if its an ACK packet. Add to sequence num if it is
-                    elif packet.msg_S == "1":
-                        self.seq_num +=1
-                        break;
-                    #check if its a NAK packet.
-                    elif packet.msg_S == "0":
-                        self.byte_buffer = ''
 
     def rdt_3_0_receive(self):
         ret_S = None
