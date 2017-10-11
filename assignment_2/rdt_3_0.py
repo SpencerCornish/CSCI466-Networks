@@ -189,7 +189,7 @@ class RDT:
             #get current time
             t = time.time()
             while True:
-                #timeout if waiting more than 4 seconds
+                #timeout if waiting more than 5 seconds
                 if(time.time() < (5 + t)):
                     break;
                 rmessage = self.network.udt_receive()
