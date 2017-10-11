@@ -100,7 +100,7 @@ class RDT:
             #while the response is nothing
             while True:
                 rmessage = self.network.udt_receive()
-                if(rmessage !== ''):
+                if(rmessage != ''):
                     break;
             #find length of the rmessage we recieved
             mlength = int(rmessage[:Packet.length_S_length])
@@ -189,11 +189,11 @@ class RDT:
             t = time.time()
             while True:
                 #timeout if waiting more than 4 seconds
-                if(time.time() < (4 + t)):
+                if(time.time() < (5 + t)):
                     break;
                 rmessage = self.network.udt_receive()
                 #if response is not empty
-                if(rmessage !== ''):
+                if(rmessage != ''):
                     break;
                 #find length of the rmessage we recieved
                 mlength = int(rmessage[:Packet.length_S_length])
