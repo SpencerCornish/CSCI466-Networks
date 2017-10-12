@@ -183,6 +183,7 @@ class RDT:
         #current time
         t = None;
         p = Packet(self.seq_num, msg_S)
+        seq_num_cache = self.seq_num
         while True:
             self.network.udt_send(p.get_byte_S())
             rmessage = ''
@@ -194,8 +195,8 @@ class RDT:
                     break;
                 rmessage = self.network.udt_receive()
                 #if response is not empty
-                if(rmessage != ''):
-                    break;
+            if(rmessage == ''):
+                continue
             #find length of the rmessage we recieved
             mlength = int(rmessage[:Packet.length_S_length])
             #find byte buffer by going from the length of the message to the end of the packet
@@ -223,7 +224,6 @@ class RDT:
         ret_S = None
         byte_S = self.network.udt_receive()
         self.byte_buffer = self.byte_buffer + byte_S
-
         while True:
             # check if we have received enough bytes
             if len(self.byte_buffer) < Packet.length_S_length:

@@ -130,7 +130,6 @@ class RDT:
         ret_S = None
         byte_S = self.network.udt_receive()
         self.byte_buffer = self.byte_buffer + byte_S
-
         while True:
             # check if we have received enough bytes
             if len(self.byte_buffer) < Packet.length_S_length:
