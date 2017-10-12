@@ -9,8 +9,8 @@ import rdt_2_1
 ## Provides an abstraction for the network layer
 class NetworkLayer:
     #configuration parameters
-    prob_pkt_loss = 0
-    prob_byte_corr = .9
+    prob_pkt_loss = 0.3
+    prob_byte_corr = 0
     prob_pkt_reorder = 0
 
     #class variables
@@ -87,13 +87,12 @@ class NetworkLayer:
     def collect(self):
 #         print (threading.currentThread().getName() + ': Starting')
         while(True):
-            print("Stuck 'ere'")
             try:
                 recv_bytes = self.conn.recv(2048)
                 with self.lock:
                     self.buffer_S += recv_bytes.decode('utf-8')
             # you may need to uncomment the BlockingIOError handling on Windows machines
-            except(BaseException):
+            except (BaseException):
                 pass
             except socket.timeout as err:
                 pass
