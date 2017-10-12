@@ -78,7 +78,6 @@ class RDT:
             while True:
                 #timeout if waiting more than 2 seconds
                 if(time.time() > (1 + t) or rmessage != ''):
-                    print("Timeout detected! resending...")
                     break;
                 rmessage = self.network.udt_receive()
                 #if response is not empty
@@ -90,7 +89,6 @@ class RDT:
             self.byte_buffer = rmessage[mlength:]
             #if packet is corrupt, set buffer to ''
             if Packet.corrupt(rmessage[:mlength]):
-                print("Packet was corrupt")
                 self.byte_buffer = ''
             #if packet is not corrupt
             if not Packet.corrupt(rmessage[:mlength]):
@@ -98,7 +96,6 @@ class RDT:
                 packet = Packet.from_byte_S(rmessage[:mlength])
                 #check to see if packet's sequence number is behind, send ACK packet if behind
                 if packet.seq_num < self.seq_num:
-                    print("Sequence number was behind. (Packet Loss!) Sending ACK")
                     ackpacket = Packet(packet.seq_num, "1")
                     self.network.udt_send(ackpacket.get_byte_S())
                 #check if its an ACK packet. Add to sequence num if it is
@@ -116,17 +113,14 @@ class RDT:
         while True:
             # check if we have received enough bytes
             if len(self.byte_buffer) < Packet.length_S_length:
-                print("Not enough bytes receved.")
                 break  # not enough bytes to read packet length
 
             length = int(self.byte_buffer[:Packet.length_S_length])
             if len(self.byte_buffer) < length:
-                print("Not enough bytes to read the packet.")
                 break  # not enough bytes to read the whole packet
 
             # Check for corrupt packet
             if Packet.corrupt(self.byte_buffer):
-                print("Packet was corrupt.")
                 resp = Packet(self.seq_num, "0")
                 self.network.udt_send(resp.get_byte_S())
             else:
@@ -141,7 +135,6 @@ class RDT:
 
                 # Check for desynced packet
                 if packet.seq_num < self.seq_num:
-                    print("Packet was out of sync!")
                     resp = Packet(packet.seq_num, "1")
                     self.network.udt_send(resp.get_byte_S())
 
