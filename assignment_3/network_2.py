@@ -176,7 +176,7 @@ class Router:
                     for x in p:
                         self.out_intf_L[i].put(x.to_byte_S(), True)
                         print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
-                        % (self, x.to_byte_S(), i, i, self.out_intf_L[i].mtu))
+                        % (self, x.to_byte_S(), i, i, MTU))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass
