@@ -122,8 +122,10 @@ class Host:
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
-            self.fragpcks.append(pkt_S[NetworkPacket.flag_S_length + NetworkPacket.offset_S_length :])
-            if(pkt_S[NetworkPacket.dst_addr_S_length] != '1'):
+            if(pkt_S[NetworkPacket.dst_addr_S_length] == '1'):
+                self.fragpcks.append(pkt_S[NetworkPacket.dst_addr_S_length + NetworkPacket.flag_S_length + NetworkPacket.offset_S_length:])
+            else:
+                self.fragpcks.append(pkt_S[NetworkPacket.dst_addr_S_length:])
                 print('%s: !!RECEIVED!! packet "%s"' % (self, ''.join(self.fragpcks)))
                 self.fragpcks.clear()
     ## thread target for the host to keep receiving data
