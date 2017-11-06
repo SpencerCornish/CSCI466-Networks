@@ -82,6 +82,7 @@ class Host:
     def udt_send(self, dst_addr, data_S):
         #if packet size is larger than mtu
         if(len(data_S) > self.out_intf_L[0].mtu):
+            #dst_addr length is 5 so subtract that from the mtu to get length text can be
             l = self.out_intf_L[0].mtu - 5
             pck1 = NetworkPacket(dst_addr, data_S[0:l])
             pck2 = NetworkPacket(dst_addr, data_S[l:])
