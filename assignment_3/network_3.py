@@ -81,7 +81,7 @@ class NetworkPacket:
                 if(NetworkPacket.flag_S_length + NetworkPacket.offset_S_length + len(data_S[off:]) < mtu or NetworkPacket.flag_S_length + NetworkPacket.offset_S_length + len(data_S[off:]) == mtu):
                     fragmented = 0
                 nextoff = off + mtu - self.flag_S_length - self.offset_S_length
-                fragpcks.append(self(dst_addr, data_S[off:nextoff], fragmented, off))
+                fragpcks.append(self(src_addr, dst_addr, data_S[off:nextoff], fragmented, off))
                 off = nextoff
             return fragpcks
         else:
@@ -110,16 +110,16 @@ class Host:
     def udt_send(self, dst_addr, data_S):
         #if packet size is larger than mtu
         if(len(data_S) > self.out_intf_L[0].mtu):
-            #dst_addr length is 5 so subtract that from the mtu to get length text can be
-            l = self.out_intf_L[0].mtu - 5
-            pck1 = NetworkPacket(dst_addr, data_S[0:l])
-            pck2 = NetworkPacket(dst_addr, data_S[l:])
+            #dst_addr+src_addr length is 10 so subtract that from the mtu to get length text can be
+            l = self.out_intf_L[0].mtu - 10
+            pck1 = NetworkPacket(self.addr, dst_addr, data_S[0:l])
+            pck2 = NetworkPacket(self.addr, dst_addr, data_S[l:])
             self.out_intf_L[0].put(pck1.to_byte_S()) #send packets always enqueued successfully
             print('%s: sending packet "%s" out interface with mtu=%d' % (self, pck1, self.out_intf_L[0].mtu))
             self.out_intf_L[0].put(pck2.to_byte_S()) #send packets always enqueued successfully
             print('%s: sending packet "%s" out interface with mtu=%d' % (self, pck2, self.out_intf_L[0].mtu))
         else:
-            p = NetworkPacket(dst_addr, data_S)
+            p = NetworkPacket(self.addr, dst_addr, data_S)
             self.out_intf_L[0].put(p.to_byte_S())  # send packets always enqueued successfully
             print('%s: sending packet "%s" out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
     fragpcks = []
@@ -128,9 +128,9 @@ class Host:
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
             if(pkt_S[NetworkPacket.dst_addr_S_length] == '1'):
-                self.fragpcks.append(pkt_S[NetworkPacket.dst_addr_S_length + NetworkPacket.flag_S_length + NetworkPacket.offset_S_length:])
+                self.fragpcks.append(pkt_S[NetworkPacket.src_addr_S_length+ NetworkPacket.dst_addr_S_length + NetworkPacket.flag_S_length + NetworkPacket.offset_S_length:])
             else:
-                self.fragpcks.append(pkt_S[NetworkPacket.dst_addr_S_length:])
+                self.fragpcks.append(pkt_S[NetworkPacket.src_addr_S_length + NetworkPacket.dst_addr_S_length:])
                 print('%s: !!RECEIVED!! packet "%s"' % (self, ''.join(self.fragpcks)))
                 self.fragpcks.clear()
     ## thread target for the host to keep receiving data
@@ -177,7 +177,13 @@ class Router:
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(MTU, pkt_S) #parse a packet out
-                    outbound_route = self.forwarding_table[i]
+                    src = pkt_S[4:5]
+                    outbound_route = self.forwarding_table.get(src)
+                    for x in self.forwarding_table:
+                        print(x)
+                        print("x")
+                    print(src + 'src src')
+                    print(outbound_route)
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i

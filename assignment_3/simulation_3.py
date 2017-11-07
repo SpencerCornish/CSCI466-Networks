@@ -31,10 +31,10 @@ if __name__ == '__main__':
     server_2 = network_3.Host(4)
     object_L.append(server_2)
 
-    router_a = network_3.Router(name='A', intf_count=4, max_queue_size=router_queue_size)
-    router_b = network_3.Router(name='B', intf_count=2, max_queue_size=router_queue_size)
-    router_c = network_3.Router(name='C', intf_count=2, max_queue_size=router_queue_size)
-    router_d = network_3.Router(name='D', intf_count=4, max_queue_size=router_queue_size)
+    router_a = network_3.Router(name='A', intf_count=4, max_queue_size=router_queue_size, forwarding_table=fwdA)
+    router_b = network_3.Router(name='B', intf_count=2, max_queue_size=router_queue_size, forwarding_table=fwdB)
+    router_c = network_3.Router(name='C', intf_count=2, max_queue_size=router_queue_size, forwarding_table=fwdC)
+    router_d = network_3.Router(name='D', intf_count=4, max_queue_size=router_queue_size, forwarding_table=fwdD)
 
     object_L.append(router_a)
     object_L.append(router_b)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     #create some send events
     for i in range(1):
-        client_1.udt_send(2, 'Turmoil has engulfed the Galactic Republic. The taxation of trade routes to .... %d' % i)
+        client_1.udt_send(3, 'Turmoil has engulfed the Galactic Republic. The taxation of trade routes to .... %d' % i)
 
 
 
