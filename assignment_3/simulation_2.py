@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     #create some send events
     for i in range(1):
-        client.udt_send(2, 'Turmoil has engulfed the Galactic Republic. The taxation of trade routes to .... %d' % i)
+        client.udt_send(2, 'Turmoil has engulfed the Galactic Republic. The taxation of trade routes to outlying...%d' % i)
 
 
 
