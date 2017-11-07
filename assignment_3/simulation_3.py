@@ -11,10 +11,10 @@ from time import sleep
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
 simulation_time = 5 #give the network sufficient time to transfer all packets before quitting
-fwdA = {1:2, 2:3}
-fwdB = {1:1}
-fwdC = {2:1}
-fwdD = {1:2, 2:3}
+fwdA = {1: 2, 2: 3}
+fwdB = {1: 1}
+fwdC = {2: 1}
+fwdD = {1: 2, 2: 3}
 if __name__ == '__main__':
     object_L = [] # keeps track of objects, so we can kill their threads
 

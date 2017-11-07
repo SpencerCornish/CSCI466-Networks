@@ -85,7 +85,7 @@ class NetworkPacket:
                 off = nextoff
             return fragpcks
         else:
-            return self(src_addr, dst_addr, data_S, fragmented, off)
+            return [self(src_addr, dst_addr, data_S, fragmented, off)]
 
 
 
@@ -178,19 +178,22 @@ class Router:
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(MTU, pkt_S) #parse a packet out
                     src = pkt_S[4:5]
-                    outbound_route = self.forwarding_table.get(src)
-                    for x in self.forwarding_table:
-                        print(x)
-                        print("x")
-                    print(src + 'src src')
-                    print(outbound_route)
+                    outbound_route = self.forwarding_table.get(int(src))
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i
                     for x in p:
-                        self.out_intf_L[outbound_route].put(x.to_byte_S(), True)
+                        self.out_intf_L[int(outbound_route)].put(x.to_byte_S(), True)
+                        # print('*B***************************')
+                        # print(self)
+                        # print(x.to_byte_S())
+                        # print(i)
+                        # print(outbound_route)
+                        # print(self.out_intf_L[outbound_route].mtu)
+                        # print('*E***************************')
+
                         print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
-                        % (self, x.to_byte_S(), i, i, self.out_intf_L[i].mtu))
+                        % (self, x.to_byte_S(), i, outbound_route, self.out_intf_L[outbound_route].mtu))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass
