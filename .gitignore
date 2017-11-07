@@ -102,3 +102,6 @@ ENV/
 
 # Mac junk
 .DS_Store
+
+.idea/
+.idea
