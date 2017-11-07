@@ -127,11 +127,12 @@ class Host:
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
-            if(pkt_S[NetworkPacket.dst_addr_S_length] == '1'):
+            if(pkt_S[NetworkPacket.src_addr_S_length] == '1'):
                 self.fragpcks.append(pkt_S[NetworkPacket.src_addr_S_length+ NetworkPacket.dst_addr_S_length + NetworkPacket.flag_S_length + NetworkPacket.offset_S_length:])
             else:
                 self.fragpcks.append(pkt_S[NetworkPacket.src_addr_S_length + NetworkPacket.dst_addr_S_length:])
                 print('%s: !!RECEIVED!! packet "%s"' % (self, ''.join(self.fragpcks)))
+                print('************************')
                 self.fragpcks.clear()
     ## thread target for the host to keep receiving data
     def run(self):
@@ -168,7 +169,7 @@ class Router:
     ## look through the content of incoming interfaces and forward to
     # appropriate outgoing interfaces
     def forward(self):
-        MTU = 30
+        self.out_intf_L[0].mtu = 45
         for i in range(len(self.in_intf_L)):
             pkt_S = None
             try:
@@ -176,7 +177,7 @@ class Router:
                 pkt_S = self.in_intf_L[i].get()
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
-                    p = NetworkPacket.from_byte_S(MTU, pkt_S) #parse a packet out
+                    p = NetworkPacket.from_byte_S(self.out_intf_L[0].mtu, pkt_S) #parse a packet out
                     src = pkt_S[4:5]
                     outbound_route = self.forwarding_table.get(int(src))
                     # HERE you will need to implement a lookup into the
@@ -193,7 +194,7 @@ class Router:
                         # print('*E***************************')
 
                         print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
-                        % (self, x.to_byte_S(), i, outbound_route, self.out_intf_L[outbound_route].mtu))
+                        % (self, x.to_byte_S(), i, outbound_route, self.out_intf_L[0].mtu))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass

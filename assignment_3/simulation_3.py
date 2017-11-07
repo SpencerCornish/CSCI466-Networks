@@ -10,7 +10,7 @@ from time import sleep
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 5 #give the network sufficient time to transfer all packets before quitting
+simulation_time = 10 #give the network sufficient time to transfer all packets before quitting
 fwdA = {1: 2, 2: 3}
 fwdB = {1: 1}
 fwdC = {2: 1}
@@ -90,8 +90,8 @@ if __name__ == '__main__':
 
     #create some send events
     for i in range(1):
-        client_1.udt_send(3, 'Turmoil has engulfed the Galactic Republic. The taxation of trade routes to .... %d' % i)
-
+        client_1.udt_send(3, 'Turmoil has engulfed the Galactic Republic. The taxation of trade routes to...')
+        #client_2.udt_send(4, '..outlying star systems is in dispute. Hoping to resolve the matter with a..')
 
 
     #give the network sufficient time to transfer all packets before quitting
