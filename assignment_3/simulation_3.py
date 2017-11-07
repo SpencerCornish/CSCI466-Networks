@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # Links for client 1-2
     link_layer.add_link(link_3.Link(client_1, 0, router_a, 0, 50))
-    link_layer.add_link(link_3.Link(client_2, 1, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(client_2, 0, router_a, 1, 50))
 
     # Links for Router A
     link_layer.add_link(link_3.Link(router_a, 2, router_b, 0, 50))

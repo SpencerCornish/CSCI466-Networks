@@ -32,14 +32,17 @@ class Interface:
 # NOTE: This class will need to be extended to for the packet to include
 # the fields necessary for the completion of this assignment.
 class NetworkPacket:
-    ## packet encoding lengths
+    # packet encoding lengths
     dst_addr_S_length = 5
+    src_addr_S_length = 5
+
     flag_S_length = 1
     offset_S_length = 2
 
     ##@param dst_addr: address of the destination host
     # @param data_S: packet payload
-    def __init__(self, dst_addr, data_S, flag=0, offset=0):
+    def __init__(self, src_addr, dst_addr, data_S, flag=0, offset=0):
+        self.src_addr = src_addr
         self.dst_addr = dst_addr
         self.data_S = data_S
         self.flag = flag
@@ -51,7 +54,8 @@ class NetworkPacket:
 
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
-        byte_S = str(self.dst_addr).zfill(self.dst_addr_S_length)
+        byte_S = str(self.src_addr).zfill(self.src_addr_S_length)
+        byte_S += str(self.dst_addr).zfill(self.dst_addr_S_length)
         if(self.flag != 0):
             byte_S += str(self.flag).zfill(self.flag_S_length)
             byte_S += str(self.offset).zfill(self.offset_S_length)
@@ -62,8 +66,9 @@ class NetworkPacket:
     # @param byte_S: byte string representation of the packet
     @classmethod
     def from_byte_S(self, mtu, byte_S):
-        dst_addr = int(byte_S[0 : NetworkPacket.dst_addr_S_length])
-        data_S = byte_S[NetworkPacket.dst_addr_S_length : ]
+        src_addr = int(byte_S[0 : NetworkPacket.src_addr_S_length])
+        dst_addr = int(byte_S[NetworkPacket.src_addr_S_length: NetworkPacket.src_addr_S_length + NetworkPacket.dst_addr_S_length])
+        data_S = byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.src_addr_S_length : ]
         #set fragmented and offset to 0 since we are not sure if this is a fragmented packet
         fragmented = 0
         off = 0
@@ -80,7 +85,7 @@ class NetworkPacket:
                 off = nextoff
             return fragpcks
         else:
-            return self(dst_addr, data_S, fragmented, off)
+            return self(src_addr, dst_addr, data_S, fragmented, off)
 
 
 
@@ -147,12 +152,14 @@ class Router:
     ##@param name: friendly router name for debugging
     # @param intf_count: the number of input and output interfaces
     # @param max_queue_size: max queue length (passed to Interface)
-    def __init__(self, name, intf_count, max_queue_size):
-        self.stop = False #for thread termination
+    # @param forwarding_table: Table of port connections
+    def __init__(self, name, intf_count, max_queue_size, forwarding_table):
+        self.stop = False # for thread termination
         self.name = name
-        #create a list of interfaces
+        # create a list of interfaces
         self.in_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
         self.out_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
+        self.forwarding_table = forwarding_table
 
     ## called when printing the object
     def __str__(self):
@@ -170,11 +177,12 @@ class Router:
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(MTU, pkt_S) #parse a packet out
+                    outbound_route = self.forwarding_table[i]
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i
                     for x in p:
-                        self.out_intf_L[i].put(x.to_byte_S(), True)
+                        self.out_intf_L[outbound_route].put(x.to_byte_S(), True)
                         print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
                         % (self, x.to_byte_S(), i, i, self.out_intf_L[i].mtu))
             except queue.Full:
