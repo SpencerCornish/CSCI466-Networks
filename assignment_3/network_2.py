@@ -161,7 +161,7 @@ class Router:
     ## look through the content of incoming interfaces and forward to
     # appropriate outgoing interfaces
     def forward(self):
-        MTU = 30
+        self.out_intf_L[0].mtu = 30
         for i in range(len(self.in_intf_L)):
             pkt_S = None
             try:
@@ -169,14 +169,14 @@ class Router:
                 pkt_S = self.in_intf_L[i].get()
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
-                    p = NetworkPacket.from_byte_S(MTU, pkt_S) #parse a packet out
+                    p = NetworkPacket.from_byte_S(self.out_intf_L[0].mtu, pkt_S) #parse a packet out
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i
                     for x in p:
                         self.out_intf_L[i].put(x.to_byte_S(), True)
                         print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
-                        % (self, x.to_byte_S(), i, i, MTU))
+                        % (self, x.to_byte_S(), i, i, self.out_intf_L[0].mtu))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass

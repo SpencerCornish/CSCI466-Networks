@@ -11,7 +11,10 @@ from time import sleep
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
 simulation_time = 5 #give the network sufficient time to transfer all packets before quitting
-
+fwdA = {1:2, 2:3}
+fwdB = {1:1}
+fwdC = {2:1}
+fwdD = {1:2, 2:3}
 if __name__ == '__main__':
     object_L = [] # keeps track of objects, so we can kill their threads
 
@@ -44,7 +47,7 @@ if __name__ == '__main__':
 
     # Links for client 1-2
     link_layer.add_link(link_3.Link(client_1, 0, router_a, 0, 50))
-    link_layer.add_link(link_3.Link(client_2, 1, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(client_2, 0, router_a, 1, 50))
 
     # Links for Router A
     link_layer.add_link(link_3.Link(router_a, 2, router_b, 0, 50))
