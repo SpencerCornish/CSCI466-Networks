@@ -249,10 +249,10 @@ class Router:
         print(self.rt_tbl_D)
 
         #  Print the headerline
-        print("___________________________________")
+        print("____________________________________")
 
         # print the first row (Self, and destinations)
-        des = self.name + " |   "
+        des = "|" + self.name + "    |   "
         for dest in self.rt_tbl_D.keys():
             des += dest + " |   "
         print(des)
@@ -263,24 +263,26 @@ class Router:
         num = 0;
         selfcosts1 = ' |  ' + self.name + '   |    '
         selfcosts2 =""
-
-        pstr = ""
+        border ="|"
+        pstr = '|'
         count = 0
         for key in self.rt_tbl_D[self.name].keys():
             if count > 0:
-                pstr += "+"
+                pstr += '|'
                 for _ in range(len(self.rt_tbl_D)+1):
-                    pstr += "___________"
+                    pstr += "------|"
+                    border+="------|"
                 pstr += "\n|"
 
-            pstr += key + " |"
+            pstr += key + "    | "
             for _, v in self.rt_tbl_D.items():
                 val = 999
                 if key in v:
                     val = v[key]
-                pstr += str(val).rjust(3) + "|" # rjust necessary here if costs go into double-digits
+                pstr += str(val).rjust(3) + "  | " # rjust necessary here if costs go into double-digits
             pstr += '\n'
             count += 1
+        pstr+=border
         print(pstr)
         # for keya, valuea in self.rt_tbl_D.items():
         #     print(keya, end=' |  ')
@@ -303,9 +305,6 @@ class Router:
         #                 selfcosts+= str(dest[cost]) + " |    "
         #                 num+=1
 
-
-        #print a divider
-        # print("|------|------|------|------|------|")
         #
         # othercosts = "| " + self.name + "   |    "
         # #for link in self.intf_L:
@@ -313,52 +312,7 @@ class Router:
         #     for key1, value1 in value.items():
         #         print(str(value1) + " |    ", end =" ")
         #     print("\n")
-        # print("___________________________________")
-        # pstr = '+' # output string
-        # borderStr = '===+'
-        # linesepStr = '---+'
-        #
-        # # add top border
-        # for _ in range(len(self.rt_tbl_D)+1):
-        #     pstr += borderStr
-        # pstr += '\n|' + self.name + ' |'
-        # # Add column names
-        # for k, _ in self.rt_tbl_D.items():
-        #     pstr += " " + k + "|"
-        # pstr += '\n'
-        #
-        # # add bottom header border
-        # pstr += "+"
-        # for _ in range(len(self.rt_tbl_D)+1):
-        #     pstr += borderStr
-        # pstr += '\n|'
-        #
-        # # add body of table
-        # count = 0
-        # for key in self.rt_tbl_D[self.name].keys():
-        #     if count > 0:
-        #         pstr += "+"
-        #         for _ in range(len(self.rt_tbl_D)+1):
-        #             pstr += linesepStr
-        #         pstr += "\n|"
-        #
-        #     pstr += key + " |"
-        #     for _, v in self.rt_tbl_D.items():
-        #         val = 999
-        #         if key in v:
-        #             val = v[key]
-        #         pstr += str(val).rjust(3) + "|" # rjust necessary here if costs go into double-digits
-        #     pstr += '\n'
-        #     count += 1
-        #
-        # # add bottom border
-        # pstr += "+"
-        # for _ in range(len(self.rt_tbl_D)+1):
-        #     pstr += borderStr
-        # pstr += "\n"
-        #
-        # # print the formatted table
-        # print(pstr)
+
 
     ## thread target for the host to keep forwarding data
     def run(self):
