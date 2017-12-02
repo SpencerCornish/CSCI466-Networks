@@ -276,7 +276,7 @@ class Router:
 
             pstr += key + "    | "
             for _, v in self.rt_tbl_D.items():
-                val = 999
+                val = 100
                 if key in v:
                     val = v[key]
                 pstr += str(val).rjust(3) + "  | " # rjust necessary here if costs go into double-digits
@@ -284,35 +284,6 @@ class Router:
             count += 1
         pstr+=border
         print(pstr)
-        # for keya, valuea in self.rt_tbl_D.items():
-        #     print(keya, end=' |  ')
-        #     print("\n")
-        #     #for i in range(len(list(self.rt_tbl_D[keya].values()))):
-        #     for i in enumerate(list(self.rt_tbl_D[keya].values())):
-        #         print(i)
-        #     selfcosts1 +=str(list(self.rt_tbl_D[keya].values())[0]) + ' |  '
-        #     print(selfcosts1)            # print(selfcosts2)
-            #print(list(self.rt_tbl_D[keya].values())[0], end=' ')
-
-            # for cost in self.rt_tbl_D[keya].values():
-            #
-            #     print(cost, end=' | ')
-            #
-            #
-            # print("\n")
-        #         while(num < len(self.intf_L)):
-        #             for i, dest in self.rt_tbl_D.items():
-        #                 selfcosts+= str(dest[cost]) + " |    "
-        #                 num+=1
-
-        #
-        # othercosts = "| " + self.name + "   |    "
-        # #for link in self.intf_L:
-        # for key, value in self.rt_tbl_D.items():
-        #     for key1, value1 in value.items():
-        #         print(str(value1) + " |    ", end =" ")
-        #     print("\n")
-
 
     ## thread target for the host to keep forwarding data
     def run(self):
