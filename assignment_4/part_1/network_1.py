@@ -168,7 +168,6 @@ class Router:
                     self.forward_packet(p,i)
                 elif p.prot_S == 'control':
                     print(p)
-                    print(i)
                     self.update_routes(p, i)
                 else:
                     raise Exception('%s: Unknown packet type in packet %s' % (self, p))
@@ -189,35 +188,74 @@ class Router:
             print('%s: packet "%s" lost on interface %d' % (self, p, i))
             pass
 
-
-    ## send out route update
-    # @param i Interface number on which to send out a routing update
-    def send_routes(self, i):
-        routes = json.dumps(self.rt_tbl_D)
-        packet_body = self.name + routes
-        p = NetworkPacket(0, 'control', packet_body)
+    ## forward the packet according to the routing table
+    #  @param p Packet to forward
+    #  @param i Incoming interface number for packet p
+    def forward_packet(self, p, i):
         try:
-            print('%s: sending routing update "%s" from interface %d' % (self, p, i))
-            self.intf_L[i].put(p.to_byte_S(), 'out', True)
+            final_destination = ''
+            # Start the best cost very high, as to prevent issues later
+            best_cost = 1000
+
+            # Check if our packet_dest is not a neighbor
+            if p.dst not in self.cost_D:
+                router_list = []
+                for key in self.cost_D:
+                    if key.startswith("R"):
+                        router_list.append(key)
+                for router in router_list:
+                    #  get the route cost from the routing table
+                    route_cost = self.rt_tbl_D[router][self.name] + self.rt_tbl_D[p.dst][router]
+                    if route_cost < best_cost:
+                        best_cost = route_cost
+                        final_destination = router
+            else:
+                # When ur neighbor is the final destination
+                final_destination = p.dst
+                print("neighbor is final destination")
+
+            # Get the interface number
+            output_interface = list(self.cost_D[final_destination].keys())[0]
+            self.intf_L[output_interface].put(p.to_byte_S(), 'out', True)
+            print('%s: forwarding packet from interface %d to %d' % \
+                (self, i, output_interface))
         except queue.Full:
             print('%s: packet "%s" lost on interface %d' % (self, p, i))
             pass
 
 
+    ## send out route update
+    # @param i Interface number on which to send out a routing update
+    def send_routes(self, i):
+        #research showed json.dumps is a good serializer to use so we don't have to write our own
+        routes = json.dumps(self.rt_tbl_D)
+        packet_body = self.name + routes
+        p = NetworkPacket(0, 'control', packet_body)
+        try:
+            print('%s: sending routing update from interface %d' % (self, i))
+            self.intf_L[i].put(p.to_byte_S(), 'out', True)
+        except queue.Full:
+            print('%s: packet "%s" lost on interface %d' % (self, p, i))
+            pass
+
     ## forward the packet according to the routing table
     #  @param p Packet containing routing information
     def update_routes(self, p, i):
         packet = str(p)
+        source_start_len = NetworkPacket.prot_S_length + NetworkPacket.dst_S_length
+        source_end_len = source_start_len + 2
+        source_router = packet[source_start_len : source_end_len]
+        vector = json.loads(packet[source_end_len:])
 
-        source_router = packet[NetworkPacket.prot_S_length + NetworkPacket.dst_S_length: NetworkPacket.dst_S_length+NetworkPacket.prot_S_length+2]
-        vector = json.loads(packet[NetworkPacket.dst_S_length + NetworkPacket.prot_S_length+2:])
+        #  Load up the aggregate list of keys
         keys = self.rt_tbl_D.keys() | vector.keys()
+
         router_list = []
         for key in keys:
             # Add Routers to the router_list
             if key.startswith("R"):
                 router_list.append(key)
-
+        for key in keys:
             if key not in vector:
                 vector[key] = {source_router: 1000}
 
@@ -227,63 +265,60 @@ class Router:
             self.rt_tbl_D[key][source_router] = vector[key][source_router]
 
         for dest_key in keys:
-            dest_vector = self.rt_tbl_D[dest_key]
             for router in router_list:
                 route_vector = self.rt_tbl_D[router]
+                dest_vector = self.rt_tbl_D[dest_key]
 
                 if router == dest_key:
                     continue
+
+                if router not in dest_vector:
+                    dest_vector[router] = 1000
 
                 bellman_ford = route_vector[self.name] + dest_vector[router]
                 if bellman_ford < dest_vector[self.name]:
                     dest_vector[self.name] = bellman_ford
                     for port in range(len(self.intf_L)):
                         self.send_routes(port)
-        print('%s: Received routing update %s from interface %d  \n' % (self, p, i))
+        print('%s: Received routing update from interface %d' % (self, i))
 
 
 
     ## Print routing table
     def print_routes(self):
-        #TODO: print the routes as a two dimensional table
-        print(self.rt_tbl_D)
+
+        # Print the current Router
+        print('%s: sending packet' % (self))
+
 
         #  Print the headerline
-        print("____________________________________")
-
+        border=''
+        for dest in self.rt_tbl_D.keys():
+            border += '--------'
+        print(border)
         # print the first row (Self, and destinations)
-        des = "|" + self.name + "    |   "
+        des = "|" + self.name + "   |   "
         for dest in self.rt_tbl_D.keys():
             des += dest + " |   "
         print(des)
 
-        # Print a divider of length
-        print("|------|------|------|------|------|")
-
-        num = 0;
         selfcosts1 = ' |  ' + self.name + '   |    '
-        selfcosts2 =""
-        border ="|"
-        pstr = '|'
-        count = 0
+        body = ''
         for key in self.rt_tbl_D[self.name].keys():
-            if count > 0:
-                pstr += '|'
-                for _ in range(len(self.rt_tbl_D)+1):
-                    pstr += "------|"
-                    border+="------|"
-                pstr += "\n|"
+            for _ in range(len(self.rt_tbl_D)+1):
+                body += "------|"
+            body += "\n|"
 
-            pstr += key + "    | "
+            body += key + "   |   "
             for _, v in self.rt_tbl_D.items():
-                val = 100
                 if key in v:
                     val = v[key]
-                pstr += str(val).rjust(3) + "  | " # rjust necessary here if costs go into double-digits
-            pstr += '\n'
-            count += 1
-        pstr+=border
-        print(pstr)
+                    if val == 1000:
+                        val = 'X'
+                body += str(val) + "  |   "
+            body += '\n'
+        print(body)
+        print(border)
 
     ## thread target for the host to keep forwarding data
     def run(self):
