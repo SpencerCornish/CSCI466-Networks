@@ -239,7 +239,7 @@ class Router:
                     dest_vector[self.name] = bellman_ford
                     for port in range(len(self.intf_L)):
                         self.send_routes(port)
-        print('%s: Received routing update %s from interface %d' % (self, p, i))
+        print('%s: Received routing update %s from interface %d  \n' % (self, p, i))
 
 
 
