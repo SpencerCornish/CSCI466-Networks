@@ -1,6 +1,6 @@
 import queue
 import threading
-from link_1 import LinkFrame
+from link_3 import LinkFrame
 
 
 ## wrapper class for a queue of packets
@@ -52,9 +52,10 @@ class NetworkPacket:
     ##@param dst: address of the destination host
     # @param data_S: packet payload
     # @param priority: packet priority
-    def __init__(self, dst, data_S, priority=0):
+    def __init__(self, dst, data_S, priority):
         self.dst = dst
         self.data_S = data_S
+        self.priority = priority
         #TODO: add priority to the packet class
 
     ## called when printing the object
@@ -208,6 +209,7 @@ class Router:
             print('%s: encapsulated packet "%s" as MPLS frame "%s"' % (self, pkt, m_frame))
             #send the encapsulated packet for processing as MPLS frame
             self.process_MPLS_frame(m_frame, i)
+
 
 
     ## process an MPLS frame incoming to this router
