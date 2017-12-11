@@ -19,13 +19,14 @@ class Interface:
         try:
             if in_or_out == 'in':
                 pkt_S = self.in_queue.get(False)
-                # if pkt_S is not None:
-                #     print('getting packet from the IN queue')
+                #if pkt_S is not None:
+                    #print('Getting packet from the IN queue with priority ', pkt_S[1])
+                    #print('Current Queue Length', self.in_queue.qsize())
                 return pkt_S
             else:
                 pkt_S = self.out_queue.get(False)
-                # if pkt_S is not None:
-                #     print('getting packet from the OUT queue')
+                 #if pkt_S is not None:
+                 #    print('getting packet from the OUT queue')
                 return pkt_S
         except queue.Empty:
             return None
@@ -44,11 +45,10 @@ class Interface:
 
 
 ## Implements a network layer packet
-# NOTE: You will need to extend this class for the packet to include
-# the fields necessary for the completion of this assignment.
 class NetworkPacket:
     ## packet encoding lengths
     dst_S_length = 5
+    priority_S_length = 1
     ##@param dst: address of the destination host
     # @param data_S: packet payload
     # @param priority: packet priority
@@ -56,15 +56,14 @@ class NetworkPacket:
         self.dst = dst
         self.data_S = data_S
         self.priority = priority
-        #TODO: add priority to the packet class
-
     ## called when printing the object
     def __str__(self):
         return self.to_byte_S()
 
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
-        byte_S = str(self.dst).zfill(self.dst_S_length)
+        byte_S = str(self.priority)
+        byte_S += str(self.dst).zfill(self.dst_S_length)
         byte_S += self.data_S
         return byte_S
 
@@ -72,9 +71,10 @@ class NetworkPacket:
     # @param byte_S: byte string representation of the packet
     @classmethod
     def from_byte_S(self, byte_S):
-        dst = byte_S[0 : NetworkPacket.dst_S_length].strip('0')
-        data_S = byte_S[NetworkPacket.dst_S_length : ]
-        return self(dst, data_S)
+        priority = byte_S[0: self.priority_S_length]
+        dst = byte_S[self.priority_S_length : self.dst_S_length + self.priority_S_length].strip('0')
+        data_S = byte_S[self.dst_S_length + self.priority_S_length :]
+        return self(dst, data_S, priority)
 
 class MPLSFrame:
     label_S_length = 20
@@ -116,8 +116,8 @@ class Host:
     # @param dst: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     # @param priority: packet priority
-    def udt_send(self, dst, data_S, priority=0):
-        pkt = NetworkPacket(dst, data_S)
+    def udt_send(self, dst, data_S, priority):
+        pkt = NetworkPacket(dst, data_S, priority)
         print('%s: sending packet "%s" with priority %d' % (self, pkt, priority))
         #encapsulate network packet in a link frame (usually would be done by the OS)
         fr = LinkFrame('Network', pkt.to_byte_S())
