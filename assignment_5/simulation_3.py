@@ -59,7 +59,7 @@ if __name__ == '__main__':
     frwd_tbl_D = {(0, '18'): (1, '18'), (2, '18'): (1, '18'), (1, '16'): (0, '16'), (1, '17'): (2, '17')}
     decap_tbl_D = {'18': 1}
     router_d = Router(name='RD',
-                              intf_capacity_L=[500,200,500],
+                              intf_capacity_L=[500,50,500],
                               encap_tbl_D = encap_tbl_D,
                               frwd_tbl_D = frwd_tbl_D,
                               decap_tbl_D = decap_tbl_D,
@@ -91,16 +91,17 @@ if __name__ == '__main__':
     for i in range(1):
 
         host_2.udt_send('H3', 'HIGH_MESSAGE_%d_FROM_H3' % i, 9)
-        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, priority)
-        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, priority)
-        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, priority)
-        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, priority)
-        host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
-        host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
-        host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
-        host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
-        host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
-        host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
+        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, 8)
+        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, 7)
+        host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, 6)
+        # sleep(1)
+        # host_2.udt_send('H3', 'MESSAGE_%d_FROM_H3' % i, 5)
+        # host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, 4)
+        # host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, 3)
+        # host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, 3)
+        # host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, 2)
+        # host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, 1)
+        # host_1.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, 0)
 
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)

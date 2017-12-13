@@ -84,20 +84,23 @@ class Link:
                     #update the next free time of the interface according to serialization delay
                     pkt_size = len(pkt_S)*8 #assuming each character is 8 bits
                     intf_a.next_avail_time = time.time() + pkt_size/intf_a.capacity
-                    p = {}
-                    for i in range(intf_a.out_queue.qsize()):
-                        # If we don't have the count for any of this priority
-                        if intf_a.out_queue(i)[1] not in p:
-                            p[i[1]] = 1
-                        else:
-                            p[i[1]] += 1
-                    print(p)
+
 
 
                     print('%s: transmitting frame "%s" on %s %s -> %s %s \n' \
                           ' - seconds until the next available time %f\n' \
                           ' - queue size %d\n' \
                           % (self, pkt_S, node_a, node_a_intf, node_b, node_b_intf, intf_a.next_avail_time - time.time(), intf_a.out_queue.qsize()))
+                    if intf_a.out_queue.qsize() is not 0:
+                        print_queue = ''
+                        print_queue += '~~~~~~~~~~BEGIN_QUEUE~~~~~~~~~~~~~~~~~\n'
+                        for item in list(intf_a.out_queue.queue):
+                            print_queue += "Packet with priority: "
+                            print_queue += item[1]
+                            print_queue += "\n"
+                        print_queue += '~~~~~~~~~~END_QUEUE~~~~~~~~~~~~~~~~~~~\n'
+                        print(print_queue)
+
                 # uncomment the lines below to see waiting time until next transmission
 #                 else:
 #                     print('%s: waiting to transmit packet on %s %s -> %s, %s for another %f milliseconds' % (self, node_a, node_a_intf, node_b, node_b_intf, intf_a.next_avail_time - time.time()))

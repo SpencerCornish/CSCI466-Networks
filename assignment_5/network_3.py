@@ -21,7 +21,7 @@ class Interface:
                 pkt_S = self.in_queue.get(False)
                 #if pkt_S is not None:
                     #print('Getting packet from the IN queue with priority ', pkt_S[1])
-                    #print('Current Queue Length', self.in_queue.qsize())
+                    # print('Current Queue Length', self.in_queue.qsize())
                 return pkt_S
             else:
                 pkt_S = self.out_queue.get(False)
@@ -79,9 +79,10 @@ class NetworkPacket:
 class MPLSFrame:
     label_S_length = 20
 
-    def __init__(self, pkt, label):
+    def __init__(self, pkt, label, priority):
         self.pkt = pkt
         self.label = label
+        self.priority = priority
 
     ## called when printing the object
     def __str__(self):
@@ -89,15 +90,17 @@ class MPLSFrame:
 
     def to_byte_S(self):
         # [the label]  [the NetworkPacket]
-        byte_S = self.label.zfill(self.label_S_length)
+        byte_S = self.priority
+        byte_S += self.label.zfill(self.label_S_length-1)
         byte_S += self.pkt
         return byte_S
 
     @classmethod
     def from_byte_S(self, byte_S):
-        label = byte_S[0: self.label_S_length].lstrip('0')
+        priority = byte_S[0]
+        label = byte_S[1: self.label_S_length].lstrip('0')
         pkt = byte_S[self.label_S_length: ]
-        return self(pkt, label)
+        return self(pkt, label, priority)
 
 ## Implements a network host for receiving and transmitting data
 class Host:
@@ -205,7 +208,7 @@ class Router:
         encap = self.encap_tbl_D.get(pkt.dst)
 
         if encap is not None:
-            m_frame = MPLSFrame(pkt.to_byte_S(), encap)
+            m_frame = MPLSFrame(pkt.to_byte_S(), encap, pkt.priority)
             print('%s: encapsulated packet "%s" as MPLS frame "%s"' % (self, pkt, m_frame))
             #send the encapsulated packet for processing as MPLS frame
             self.process_MPLS_frame(m_frame, i)
@@ -216,13 +219,17 @@ class Router:
     #  @param m_fr: MPLS frame to process
     #  @param i Incoming interface number for the frame
     def process_MPLS_frame(self, m_fr, i):
-        #TODO: implement MPLS forward, or MPLS decapsulation if this is the last hop router for the path
         print('%s: processing MPLS frame "%s"' % (self, m_fr))
         #  Return the outbound dictionary, based on in interface i and label of m_fr
         decapitate_intf = self.decap_tbl_D.get(m_fr.label)
+
+
+
+
         if decapitate_intf is not None:
             pkt = m_fr.pkt
             out_intf = decapitate_intf
+
             try:
                 fr = LinkFrame('Network', m_fr.pkt)
                 self.intf_L[out_intf].put(fr.to_byte_S(), 'out', True)
@@ -237,7 +244,6 @@ class Router:
                 # Interface to #sendit on
                 out_intf = out_dict[0]
 
-                # for now forward the frame out interface 1
                 try:
                     fr = LinkFrame('MPLS', m_fr.to_byte_S())
                     self.intf_L[out_intf].put(fr.to_byte_S(), 'out', True)
