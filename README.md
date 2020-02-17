@@ -1,2 +1,2 @@
-# CSCI466-Battleship
-Assignments for CSCI466 at Montana State University
+# CSCI466-Networks
+Assignments for CSCI466-Networks at Montana State University
